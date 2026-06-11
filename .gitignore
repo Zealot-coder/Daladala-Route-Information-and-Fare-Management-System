@@ -1,0 +1,13 @@
+﻿/target
+*.log
+*.tmp
+*.class
+*.jar
+*.war
+*.iml
+/.idea
+/.vscode
+/.classpath
+/.project
+/.settings
+.DS_Store

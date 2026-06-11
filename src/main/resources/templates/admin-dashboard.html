@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Daladala System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- ADMIN NAVIGATION -->
+<nav class="navbar navbar-admin">
+    <div class="container">
+        <a class="nav-brand" th:href="@{/admin/dashboard}">
+            Daladala Admin &mdash;
+            <span th:text="${session.adminUsername}" style="font-weight:400;">admin</span>
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/admin/dashboard}" class="active">Dashboard</a>
+            <a th:href="@{/admin/routes/new}" class="btn btn-success btn-sm"
+               style="margin-left:6px;">+ Add Route</a>
+            <a th:href="@{/admin/logout}" style="color:#fca5a5; margin-left:4px;">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container page-content">
+
+    <!-- FLASH MESSAGES -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}">Success</div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}">Error</div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-label">Total Routes</div>
+            <div class="stat-value" th:text="${#lists.size(routes)}">0</div>
+        </div>
+        <div class="stat-card" style="border-left-color: #047857;">
+            <div class="stat-label">History Records</div>
+            <div class="stat-value" style="color:#047857;"
+                 th:text="${#lists.size(recentHistory)}">0</div>
+        </div>
+    </div>
+
+    <!-- ROUTES TABLE -->
+    <div class="section-header">
+        <h2 class="section-title">All Routes</h2>
+        <a th:href="@{/admin/routes/new}" class="btn btn-success btn-sm">+ Add New Route</a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(routes)}" class="empty-state">
+        <p>No routes yet.</p>
+        <a th:href="@{/admin/routes/new}" class="btn btn-primary">Add First Route</a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(routes)}" class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Route No.</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Via</th>
+                    <th>Dist.</th>
+                    <th>Fare (TZS)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="route : ${routes}">
+                    <td th:text="${route.routeNumber}">DAL-01</td>
+                    <td th:text="${route.startPoint}">Kariakoo</td>
+                    <td th:text="${route.endPoint}">Ubungo</td>
+                    <td th:text="${route.viaStops != null ? route.viaStops : '—'}">Magomeni</td>
+                    <td th:text="${route.distanceKm} + ' km'">12.0 km</td>
+                    <td class="fare-cell"
+                        th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')}">800</td>
+                    <td>
+                        <span th:if="${route.isActive}" class="badge badge-active">Active</span>
+                        <span th:unless="${route.isActive}" class="badge badge-inactive">Inactive</span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <!-- View (passenger side) -->
+                            <a th:href="@{/routes/{id}(id=${route.id})}"
+                               class="btn btn-sm btn-secondary">View</a>
+
+                            <!-- Edit -->
+                            <a th:href="@{/admin/routes/edit/{id}(id=${route.id})}"
+                               class="btn btn-sm btn-warning">Edit</a>
+
+                            <!-- Deactivate (soft delete) -->
+                            <form th:action="@{/admin/routes/delete/{id}(id=${route.id})}"
+                                  method="post">
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        th:if="${route.isActive}"
+                                        onclick="return confirm('Deactivate this route?')">
+                                    Deactivate
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- RECENT CHANGE HISTORY -->
+    <div class="section-header" style="margin-top: 36px;">
+        <h2 class="section-title">Recent Changes</h2>
+    </div>
+
+    <div th:if="${#lists.isEmpty(recentHistory)}" class="empty-state" style="padding:24px 0;">
+        <p style="font-size:14px;">No history records yet.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(recentHistory)}" class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Description</th>
+                    <th>Changed By</th>
+                    <th>Date &amp; Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="h : ${recentHistory}">
+                    <td>
+                        <span th:text="${h.action}"
+                              th:classappend="${h.action == 'CREATED'} ? 'badge badge-created' :
+                                             (${h.action == 'UPDATED'} ? 'badge badge-updated' :
+                                              'badge badge-deleted')"
+                              class="badge">
+                            UPDATED
+                        </span>
+                    </td>
+                    <td th:text="${h.changeDescription}">Fare updated</td>
+                    <td th:text="${h.changedBy}">admin</td>
+                    <td th:text="${#temporals.format(h.changedAt, 'dd MMM yyyy, HH:mm')}">
+                        01 Jan 2024, 10:30
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<footer class="footer">
+    <p>Daladala Admin Panel &mdash; Dar es Salaam, Tanzania</p>
+</footer>
+
+</body>
+</html>

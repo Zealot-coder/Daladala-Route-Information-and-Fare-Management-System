@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${route.routeNumber} + ' — Daladala System'">Route Detail</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="navbar">
+    <div class="container">
+        <a class="nav-brand" th:href="@{/}">Daladala System — Dar es Salaam</a>
+        <div class="nav-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/routes}">All Routes</a>
+            <a th:href="@{/routes/search}">Search</a>
+            <a th:href="@{/admin/login}" class="admin-link">Admin</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container page-content">
+
+    <!-- BACK LINK -->
+    <p style="margin-bottom: 16px;">
+        <a th:href="@{/routes}" style="color:#1d4ed8; font-size:14px;">&larr; Back to Routes</a>
+    </p>
+
+    <!-- ROUTE HEADER WITH FARE -->
+    <div class="route-header">
+        <div>
+            <h2 th:text="${route.routeNumber}">DAL-303</h2>
+            <p class="route-path"
+               th:text="${route.startPoint} + '  →  ' + ${route.endPoint}">
+                Posta → Kimara
+            </p>
+            <p style="font-size:13px; color:#bfdbfe; margin-top:4px;"
+               th:if="${route.viaStops != null}"
+               th:text="'Via: ' + ${route.viaStops}">
+               Via: Ubungo, Magomeni
+            </p>
+        </div>
+        <div class="fare-box">
+            <div class="fare-label">Fare</div>
+            <div class="fare-amount"
+                 th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')} + ' TZS'">
+                1,000 TZS
+            </div>
+        </div>
+    </div>
+
+    <!-- ROUTE INFO GRID -->
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Route Number</div>
+            <div class="info-value" th:text="${route.routeNumber}">DAL-303</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Starting Point</div>
+            <div class="info-value" th:text="${route.startPoint}">Posta</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">End Point</div>
+            <div class="info-value" th:text="${route.endPoint}">Kimara</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Via (Stops)</div>
+            <div class="info-value"
+                 th:text="${route.viaStops != null ? route.viaStops : 'Direct'}">
+                Ubungo, Magomeni
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Distance</div>
+            <div class="info-value" th:text="${route.distanceKm} + ' km'">18.0 km</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Fare</div>
+            <div class="info-value" style="color:#1d4ed8;"
+                 th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')} + ' TZS'">
+                1,000 TZS
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Status</div>
+            <div class="info-value">
+                <span th:if="${route.isActive}" class="badge badge-active">Active</span>
+                <span th:unless="${route.isActive}" class="badge badge-inactive">Inactive</span>
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Last Updated</div>
+            <div class="info-value" style="font-size:14px;"
+                 th:text="${route.updatedAt != null ?
+                            #temporals.format(route.updatedAt, 'dd MMM yyyy') : 'N/A'}">
+                01 Jan 2024
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE HISTORY -->
+    <div class="card">
+        <h3 class="card-title">Route Change History</h3>
+
+        <div th:if="${#lists.isEmpty(history)}" class="empty-state" style="padding: 20px 0;">
+            <p style="font-size:14px;">No history records found for this route.</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(history)}" class="table-wrapper"
+             style="box-shadow: none; border: 1px solid #e5e7eb;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Changed By</th>
+                        <th>Date &amp; Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="h : ${history}">
+                        <td>
+                            <span th:text="${h.action}"
+                                  th:classappend="${h.action == 'CREATED'} ? 'badge badge-created' :
+                                                 (${h.action == 'UPDATED'} ? 'badge badge-updated' :
+                                                  'badge badge-deleted')"
+                                  class="badge">
+                                CREATED
+                            </span>
+                        </td>
+                        <td th:text="${h.changeDescription}">Fare updated</td>
+                        <td th:text="${h.changedBy}">admin</td>
+                        <td th:text="${#temporals.format(h.changedAt, 'dd MMM yyyy, HH:mm')}">
+                            01 Jan 2024, 10:30
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<footer class="footer">
+    <p>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</p>
+</footer>
+
+</body>
+</html>

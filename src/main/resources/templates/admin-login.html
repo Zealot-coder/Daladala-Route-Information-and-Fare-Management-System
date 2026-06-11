@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — Daladala System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="navbar navbar-admin">
+    <div class="container">
+        <a class="nav-brand" th:href="@{/}">Daladala System — Dar es Salaam</a>
+        <div class="nav-links">
+            <a th:href="@{/}">Passenger View</a>
+        </div>
+    </div>
+</nav>
+
+<div class="login-wrapper">
+    <div class="login-card">
+
+        <h2>Admin Login</h2>
+        <p class="login-sub">Daladala Route Management System</p>
+
+        <!-- Error message -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}">
+            Invalid credentials
+        </div>
+
+        <form th:action="@{/admin/login}" method="post">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text"
+                       id="username"
+                       name="username"
+                       class="form-control"
+                       placeholder="Enter username"
+                       required
+                       autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password"
+                       id="password"
+                       name="password"
+                       class="form-control"
+                       placeholder="Enter password"
+                       required>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                    style="width: 100%; margin-top: 6px;">
+                Login
+            </button>
+
+        </form>
+
+        <p style="text-align: center; margin-top: 18px; font-size: 13px; color: #9ca3af;">
+            <a th:href="@{/}" style="color: #1d4ed8;">Back to Passenger View</a>
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>

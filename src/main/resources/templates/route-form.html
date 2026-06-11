@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${formAction} + ' Route — Daladala Admin'">Route Form</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- ADMIN NAVIGATION -->
+<nav class="navbar navbar-admin">
+    <div class="container">
+        <a class="nav-brand" th:href="@{/admin/dashboard}">
+            Daladala Admin &mdash;
+            <span th:text="${session.adminUsername}" style="font-weight:400;">admin</span>
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/admin/dashboard}">Dashboard</a>
+            <a th:href="@{/admin/logout}" style="color:#fca5a5;">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container page-content">
+
+    <!-- BACK LINK -->
+    <p style="margin-bottom: 18px;">
+        <a th:href="@{/admin/dashboard}" style="color:#1d4ed8; font-size:14px;">
+            &larr; Back to Dashboard
+        </a>
+    </p>
+
+    <div class="card" style="max-width: 700px;">
+
+        <h2 class="card-title"
+            th:text="${formAction == 'Edit'} ? 'Edit Route' : 'Add New Route'">
+            Add New Route
+        </h2>
+
+        <!-- Duplicate route number error -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}">Error</div>
+
+        <!--
+             th:action: submits to /update (Edit) or /save (Add)
+             th:object: binds form fields to the Route entity
+        -->
+        <form th:action="${formAction == 'Edit'} ? @{/admin/routes/update} : @{/admin/routes/save}"
+              method="post"
+              th:object="${route}">
+
+            <!-- Hidden ID — required for Edit so the service knows which record to update -->
+            <input type="hidden" th:field="*{id}">
+
+            <div class="form-row">
+                <!-- Route Number -->
+                <div class="form-group">
+                    <label for="routeNumber">Route Number *</label>
+                    <input type="text"
+                           id="routeNumber"
+                           class="form-control"
+                           th:field="*{routeNumber}"
+                           th:classappend="${#fields.hasErrors('routeNumber')} ? ' is-invalid'"
+                           placeholder="e.g. DAL-303">
+                    <span th:if="${#fields.hasErrors('routeNumber')}"
+                          th:errors="*{routeNumber}"
+                          class="error-msg"></span>
+                    <span class="form-hint"
+                          th:if="${formAction == 'Edit'}">
+                        Changing route number may affect existing references.
+                    </span>
+                </div>
+
+                <!-- Fare -->
+                <div class="form-group">
+                    <label for="fareTzs">Fare (TZS) *</label>
+                    <input type="number"
+                           id="fareTzs"
+                           class="form-control"
+                           th:field="*{fareTzs}"
+                           th:classappend="${#fields.hasErrors('fareTzs')} ? ' is-invalid'"
+                           placeholder="e.g. 1000"
+                           min="1">
+                    <span th:if="${#fields.hasErrors('fareTzs')}"
+                          th:errors="*{fareTzs}"
+                          class="error-msg"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <!-- Start Point -->
+                <div class="form-group">
+                    <label for="startPoint">Starting Point *</label>
+                    <input type="text"
+                           id="startPoint"
+                           class="form-control"
+                           th:field="*{startPoint}"
+                           th:classappend="${#fields.hasErrors('startPoint')} ? ' is-invalid'"
+                           placeholder="e.g. Kariakoo">
+                    <span th:if="${#fields.hasErrors('startPoint')}"
+                          th:errors="*{startPoint}"
+                          class="error-msg"></span>
+                </div>
+
+                <!-- End Point -->
+                <div class="form-group">
+                    <label for="endPoint">End Point *</label>
+                    <input type="text"
+                           id="endPoint"
+                           class="form-control"
+                           th:field="*{endPoint}"
+                           th:classappend="${#fields.hasErrors('endPoint')} ? ' is-invalid'"
+                           placeholder="e.g. Ubungo">
+                    <span th:if="${#fields.hasErrors('endPoint')}"
+                          th:errors="*{endPoint}"
+                          class="error-msg"></span>
+                </div>
+            </div>
+
+            <!-- Via Stops -->
+            <div class="form-group">
+                <label for="viaStops">Via (Intermediate Stops)</label>
+                <input type="text"
+                       id="viaStops"
+                       class="form-control"
+                       th:field="*{viaStops}"
+                       placeholder="e.g. Magomeni, Manzese (optional)">
+                <span class="form-hint">Separate multiple stops with commas.</span>
+            </div>
+
+            <!-- Distance -->
+            <div class="form-group" style="max-width: 200px;">
+                <label for="distanceKm">Distance (km) *</label>
+                <input type="number"
+                       id="distanceKm"
+                       class="form-control"
+                       th:field="*{distanceKm}"
+                       th:classappend="${#fields.hasErrors('distanceKm')} ? ' is-invalid'"
+                       placeholder="e.g. 12.5"
+                       step="0.1"
+                       min="0.1">
+                <span th:if="${#fields.hasErrors('distanceKm')}"
+                      th:errors="*{distanceKm}"
+                      class="error-msg"></span>
+            </div>
+
+            <!-- Active toggle — only shown when editing -->
+            <div class="form-group" th:if="${formAction == 'Edit'}">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox"
+                           th:field="*{isActive}"
+                           style="width: 16px; height: 16px;">
+                    <span>Route is Active (visible to passengers)</span>
+                </label>
+            </div>
+
+            <!-- BUTTONS -->
+            <div style="display: flex; gap: 12px; margin-top: 8px;">
+                <button type="submit" class="btn btn-primary"
+                        th:text="${formAction == 'Edit'} ? 'Save Changes' : 'Add Route'">
+                    Add Route
+                </button>
+                <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<footer class="footer">
+    <p>Daladala Admin Panel &mdash; Dar es Salaam, Tanzania</p>
+</footer>
+
+</body>
+</html>

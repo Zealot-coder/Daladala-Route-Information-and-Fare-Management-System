@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Routes — Daladala System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="navbar">
+    <div class="container">
+        <a class="nav-brand" th:href="@{/}">Daladala System — Dar es Salaam</a>
+        <div class="nav-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/routes}">All Routes</a>
+            <a th:href="@{/routes/search}" class="active">Search</a>
+            <a th:href="@{/admin/login}" class="admin-link">Admin</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container page-content">
+
+    <!-- SEARCH FORM -->
+    <div class="search-card">
+        <h3>Search Routes</h3>
+
+        <!-- Option 1: Keyword search -->
+        <form th:action="@{/routes/search}" method="get">
+            <div class="search-row">
+                <div class="search-field">
+                    <label>Search by area or stop</label>
+                    <input type="text" name="keyword"
+                           th:value="${keyword}"
+                           placeholder="e.g. Kariakoo, Ubungo, Tegeta...">
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a th:href="@{/routes}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+
+        <div class="search-separator">OR search by origin and destination</div>
+
+        <!-- Option 2: From / To search -->
+        <form th:action="@{/routes/search}" method="get">
+            <div class="search-row">
+                <div class="search-field">
+                    <label>From</label>
+                    <input type="text" name="from"
+                           th:value="${from}"
+                           placeholder="e.g. Posta">
+                </div>
+                <div class="search-divider">to</div>
+                <div class="search-field">
+                    <label>To</label>
+                    <input type="text" name="to"
+                           th:value="${to}"
+                           placeholder="e.g. Kimara">
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- RESULTS HEADER -->
+    <div class="section-header">
+        <h2 class="section-title"
+            th:text="${keyword != null and !#strings.isEmpty(keyword)} ? 'Results for: ' + keyword :
+                     (from != null and !#strings.isEmpty(from)) ? 'Routes: ' + from + ' to ' + to :
+                     'All Routes'">
+            All Routes
+        </h2>
+        <span th:text="${#lists.size(routes)} + ' route(s) found'"
+              style="font-size:13px; color:#6b7280;">
+        </span>
+    </div>
+
+    <!-- NO RESULTS -->
+    <div th:if="${#lists.isEmpty(routes)}" class="empty-state">
+        <p>No routes found matching your search.</p>
+        <a th:href="@{/routes}" class="btn btn-outline">View All Routes</a>
+    </div>
+
+    <!-- RESULTS TABLE -->
+    <div th:if="${!#lists.isEmpty(routes)}" class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Route No.</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Via</th>
+                    <th>Distance</th>
+                    <th>Fare (TZS)</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="route : ${routes}">
+                    <td th:text="${route.routeNumber}">DAL-01</td>
+                    <td th:text="${route.startPoint}">Kariakoo</td>
+                    <td th:text="${route.endPoint}">Ubungo</td>
+                    <td th:text="${route.viaStops != null ? route.viaStops : '—'}">Magomeni</td>
+                    <td th:text="${route.distanceKm} + ' km'">12.0 km</td>
+                    <td class="fare-cell"
+                        th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')}">800</td>
+                    <td>
+                        <a th:href="@{/routes/{id}(id=${route.id})}"
+                           class="btn btn-sm btn-secondary">View</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<footer class="footer">
+    <p>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</p>
+</footer>
+
+</body>
+</html>
