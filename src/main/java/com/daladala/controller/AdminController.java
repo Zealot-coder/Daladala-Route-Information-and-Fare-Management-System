@@ -5,6 +5,7 @@ import com.daladala.entity.Route;
 import com.daladala.repository.AdminRepository;
 import com.daladala.service.RouteHistoryService;
 import com.daladala.service.RouteService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Optional;
 
 @Controller
@@ -23,11 +26,9 @@ public class AdminController {
 
     private final RouteService routeService;
     private final RouteHistoryService routeHistoryService;
-    private final AdminRepository adminRepository;  // login check only — no AdminService needed
+    private final AdminRepository adminRepository;
 
-    // ──────────────────────────────────────────────
-    // LOGIN
-    // ──────────────────────────────────────────────
+    // ── LOGIN ────────────────────────────────────────────────────────────────
 
     @GetMapping("/login")
     public String loginPage() {
@@ -58,28 +59,23 @@ public class AdminController {
         return "redirect:/admin/login";
     }
 
-    // ──────────────────────────────────────────────
-    // DASHBOARD
-    // ──────────────────────────────────────────────
+    // ── DASHBOARD ────────────────────────────────────────────────────────────
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
         if (!isLoggedIn(session)) return "redirect:/admin/login";
 
-        model.addAttribute("routes", routeService.getAllRoutes());
+        model.addAttribute("routes",        routeService.getAllRoutes());
         model.addAttribute("recentHistory", routeHistoryService.getAllHistory());
         return "admin-dashboard";
     }
 
-    // ──────────────────────────────────────────────
-    // ADD ROUTE
-    // ──────────────────────────────────────────────
+    // ── ADD ROUTE ─────────────────────────────────────────────────────────────
 
     @GetMapping("/routes/new")
     public String showAddForm(HttpSession session, Model model) {
         if (!isLoggedIn(session)) return "redirect:/admin/login";
-
-        model.addAttribute("route", new Route());
+        model.addAttribute("route",      new Route());
         model.addAttribute("formAction", "Add");
         return "route-form";
     }
@@ -100,26 +96,22 @@ public class AdminController {
         }
 
         if (routeService.routeNumberExists(route.getRouteNumber())) {
-            model.addAttribute("error", "Route number '" + route.getRouteNumber() + "' already exists");
+            model.addAttribute("error",      "Route number '" + route.getRouteNumber() + "' already exists");
             model.addAttribute("formAction", "Add");
             return "route-form";
         }
 
-        String adminUsername = (String) session.getAttribute("adminUsername");
-        routeService.saveRoute(route, adminUsername);
+        routeService.saveRoute(route, (String) session.getAttribute("adminUsername"));
         redirectAttributes.addFlashAttribute("success", "Route added successfully");
         return "redirect:/admin/dashboard";
     }
 
-    // ──────────────────────────────────────────────
-    // EDIT ROUTE
-    // ──────────────────────────────────────────────
+    // ── EDIT ROUTE ────────────────────────────────────────────────────────────
 
     @GetMapping("/routes/edit/{id}")
     public String showEditForm(@PathVariable Long id, HttpSession session, Model model) {
         if (!isLoggedIn(session)) return "redirect:/admin/login";
-
-        model.addAttribute("route", routeService.getRouteById(id));
+        model.addAttribute("route",      routeService.getRouteById(id));
         model.addAttribute("formAction", "Edit");
         return "route-form";
     }
@@ -139,17 +131,13 @@ public class AdminController {
             return "route-form";
         }
 
-        String adminUsername = (String) session.getAttribute("adminUsername");
-        routeService.updateRoute(route, adminUsername);
+        routeService.updateRoute(route, (String) session.getAttribute("adminUsername"));
         redirectAttributes.addFlashAttribute("success", "Route updated successfully");
         return "redirect:/admin/dashboard";
     }
 
-    // ──────────────────────────────────────────────
-    // DELETE ROUTE
-    // ──────────────────────────────────────────────
+    // ── DEACTIVATE ROUTE ──────────────────────────────────────────────────────
 
-    // POST not GET — prevents accidental deletion via a URL in the browser
     @PostMapping("/routes/delete/{id}")
     public String deleteRoute(
             @PathVariable Long id,
@@ -158,15 +146,98 @@ public class AdminController {
 
         if (!isLoggedIn(session)) return "redirect:/admin/login";
 
-        String adminUsername = (String) session.getAttribute("adminUsername");
-        routeService.deleteRoute(id, adminUsername);
+        routeService.deleteRoute(id, (String) session.getAttribute("adminUsername"));
         redirectAttributes.addFlashAttribute("success", "Route deactivated successfully");
         return "redirect:/admin/dashboard";
     }
 
-    // ──────────────────────────────────────────────
-    // HELPER
-    // ──────────────────────────────────────────────
+    // ── REACTIVATE ROUTE ──────────────────────────────────────────────────────
+
+    @PostMapping("/routes/reactivate/{id}")
+    public String reactivateRoute(
+            @PathVariable Long id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!isLoggedIn(session)) return "redirect:/admin/login";
+
+        routeService.reactivateRoute(id, (String) session.getAttribute("adminUsername"));
+        redirectAttributes.addFlashAttribute("success", "Route reactivated successfully");
+        return "redirect:/admin/dashboard";
+    }
+
+    // ── CSV EXPORT ────────────────────────────────────────────────────────────
+
+    @GetMapping("/routes/export")
+    public void exportCsv(HttpSession session, HttpServletResponse response) throws IOException {
+        if (!isLoggedIn(session)) {
+            response.sendRedirect("/admin/login");
+            return;
+        }
+
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"daladala-routes.csv\"");
+
+        PrintWriter writer = response.getWriter();
+        writer.println("Route Number,From,To,Via Stops,Distance (km),Fare (TZS),Status");
+
+        for (Route r : routeService.getAllRoutes()) {
+            writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",%.1f,%d,\"%s\"%n",
+                    r.getRouteNumber(),
+                    r.getStartPoint(),
+                    r.getEndPoint(),
+                    r.getViaStops() != null ? r.getViaStops() : "",
+                    r.getDistanceKm(),
+                    r.getFareTzs(),
+                    Boolean.TRUE.equals(r.getIsActive()) ? "Active" : "Inactive"
+            );
+        }
+        writer.flush();
+    }
+
+    // ── CHANGE PASSWORD ───────────────────────────────────────────────────────
+
+    @GetMapping("/change-password")
+    public String changePasswordPage(HttpSession session) {
+        if (!isLoggedIn(session)) return "redirect:/admin/login";
+        return "change-password";
+    }
+
+    @PostMapping("/change-password")
+    public String changePassword(
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!isLoggedIn(session)) return "redirect:/admin/login";
+
+        String username = (String) session.getAttribute("adminUsername");
+        Admin admin = adminRepository.findByUsername(username).orElseThrow();
+
+        if (!admin.getPassword().equals(oldPassword)) {
+            model.addAttribute("error", "Current password is incorrect");
+            return "change-password";
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "New passwords do not match");
+            return "change-password";
+        }
+        if (newPassword.trim().length() < 4) {
+            model.addAttribute("error", "New password must be at least 4 characters");
+            return "change-password";
+        }
+
+        admin.setPassword(newPassword);
+        adminRepository.save(admin);
+
+        redirectAttributes.addFlashAttribute("success", "Password changed successfully");
+        return "redirect:/admin/dashboard";
+    }
+
+    // ── HELPER ────────────────────────────────────────────────────────────────
 
     private boolean isLoggedIn(HttpSession session) {
         return session.getAttribute("adminUsername") != null;

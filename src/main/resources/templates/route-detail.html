@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${route.routeNumber} + ' — Daladala System'">Route Detail</title>
+    <meta name="color-scheme" content="light">
+    <title th:text="${route.routeNumber} + ' — ' + ${route.startPoint} + ' to ' + ${route.endPoint}">Route Detail</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -11,43 +12,55 @@
 <!-- NAVIGATION -->
 <nav class="navbar">
     <div class="container">
-        <a class="nav-brand" th:href="@{/}">Daladala System — Dar es Salaam</a>
+        <a class="nav-brand" th:href="@{/}">
+            <span class="nav-brand-icon">&#x1F68C;</span>
+            Daladala System
+        </a>
         <div class="nav-links">
-            <a th:href="@{/}">Home</a>
-            <a th:href="@{/routes}">All Routes</a>
-            <a th:href="@{/routes/search}">Search</a>
+            <a th:href="@{/}"              th:class="${activePage == 'home'}      ? 'active' : ''">Home</a>
+            <a th:href="@{/routes}"        th:class="${activePage == 'routes'}    ? 'active' : ''">Routes</a>
+            <a th:href="@{/routes/search}" th:class="${activePage == 'search'}    ? 'active' : ''">Search</a>
+            <a th:href="@{/calculate}"     th:class="${activePage == 'calculate'} ? 'active' : ''">Fare Calc</a>
             <a th:href="@{/admin/login}" class="admin-link">Admin</a>
         </div>
     </div>
 </nav>
 
+<!-- PAGE BANNER -->
+<div class="page-banner">
+    <div class="container">
+        <div class="page-banner-inner">
+            <div>
+                <h1 th:text="${route.routeNumber} + ' — Route Details'">DAL-303 — Route Details</h1>
+                <div class="breadcrumb">
+                    <a th:href="@{/}">Home</a>
+                    <span class="breadcrumb-sep">/</span>
+                    <a th:href="@{/routes}">Routes</a>
+                    <span class="breadcrumb-sep">/</span>
+                    <span th:text="${route.routeNumber}">DAL-303</span>
+                </div>
+            </div>
+            <a th:href="@{/routes}" class="btn btn-light btn-sm">&larr; Back to Routes</a>
+        </div>
+    </div>
+</div>
+
 <div class="container page-content">
 
-    <!-- BACK LINK -->
-    <p style="margin-bottom: 16px;">
-        <a th:href="@{/routes}" style="color:#1d4ed8; font-size:14px;">&larr; Back to Routes</a>
-    </p>
-
-    <!-- ROUTE HEADER WITH FARE -->
+    <!-- ROUTE HEADER CARD -->
     <div class="route-header">
         <div>
-            <h2 th:text="${route.routeNumber}">DAL-303</h2>
-            <p class="route-path"
-               th:text="${route.startPoint} + '  →  ' + ${route.endPoint}">
-                Posta → Kimara
-            </p>
-            <p style="font-size:13px; color:#bfdbfe; margin-top:4px;"
+            <h2 th:text="${route.startPoint} + '  →  ' + ${route.endPoint}">Posta → Kimara</h2>
+            <p class="route-path" th:text="'Route ' + ${route.routeNumber}">Route DAL-303</p>
+            <p class="route-via"
                th:if="${route.viaStops != null}"
-               th:text="'Via: ' + ${route.viaStops}">
-               Via: Ubungo, Magomeni
-            </p>
+               th:text="'Via: ' + ${route.viaStops}">Via: Ubungo, Magomeni</p>
         </div>
         <div class="fare-box">
-            <div class="fare-label">Fare</div>
+            <div class="fare-label">Passenger Fare</div>
             <div class="fare-amount"
-                 th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')} + ' TZS'">
-                1,000 TZS
-            </div>
+                 th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')}">1,000</div>
+            <div style="font-size:13px; color:#bfdbfe; margin-top:2px;">TZS</div>
         </div>
     </div>
 
@@ -66,9 +79,9 @@
             <div class="info-value" th:text="${route.endPoint}">Kimara</div>
         </div>
         <div class="info-item">
-            <div class="info-label">Via (Stops)</div>
+            <div class="info-label">Intermediate Stops</div>
             <div class="info-value"
-                 th:text="${route.viaStops != null ? route.viaStops : 'Direct'}">
+                 th:text="${route.viaStops != null ? route.viaStops : 'Direct route'}">
                 Ubungo, Magomeni
             </div>
         </div>
@@ -77,7 +90,7 @@
             <div class="info-value" th:text="${route.distanceKm} + ' km'">18.0 km</div>
         </div>
         <div class="info-item">
-            <div class="info-label">Fare</div>
+            <div class="info-label">Fare (TZS)</div>
             <div class="info-value" style="color:#1d4ed8;"
                  th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')} + ' TZS'">
                 1,000 TZS
@@ -86,7 +99,7 @@
         <div class="info-item">
             <div class="info-label">Status</div>
             <div class="info-value">
-                <span th:if="${route.isActive}" class="badge badge-active">Active</span>
+                <span th:if="${route.isActive}"  class="badge badge-active">Active</span>
                 <span th:unless="${route.isActive}" class="badge badge-inactive">Inactive</span>
             </div>
         </div>
@@ -104,12 +117,12 @@
     <div class="card">
         <h3 class="card-title">Route Change History</h3>
 
-        <div th:if="${#lists.isEmpty(history)}" class="empty-state" style="padding: 20px 0;">
-            <p style="font-size:14px;">No history records found for this route.</p>
+        <div th:if="${#lists.isEmpty(history)}" class="empty-state" style="padding:24px 0;">
+            <p style="font-size:14px;">No history records for this route.</p>
         </div>
 
-        <div th:if="${!#lists.isEmpty(history)}" class="table-wrapper"
-             style="box-shadow: none; border: 1px solid #e5e7eb;">
+        <div th:if="${!#lists.isEmpty(history)}"
+             class="table-wrapper" style="box-shadow:none; border:1px solid #e2e8f0;">
             <table>
                 <thead>
                     <tr>
@@ -123,16 +136,19 @@
                     <tr th:each="h : ${history}">
                         <td>
                             <span th:text="${h.action}"
-                                  th:classappend="${h.action == 'CREATED'} ? 'badge badge-created' :
-                                                 (${h.action == 'UPDATED'} ? 'badge badge-updated' :
-                                                  'badge badge-deleted')"
+                                  th:class="${h.action == 'CREATED'} ? 'badge badge-created' :
+                                            (${h.action == 'UPDATED'} ? 'badge badge-updated' :
+                                             'badge badge-deleted')"
                                   class="badge">
                                 CREATED
                             </span>
                         </td>
                         <td th:text="${h.changeDescription}">Fare updated</td>
-                        <td th:text="${h.changedBy}">admin</td>
-                        <td th:text="${#temporals.format(h.changedAt, 'dd MMM yyyy, HH:mm')}">
+                        <td>
+                            <span style="font-weight:600;" th:text="${h.changedBy}">admin</span>
+                        </td>
+                        <td style="white-space:nowrap;"
+                            th:text="${#temporals.format(h.changedAt, 'dd MMM yyyy, HH:mm')}">
                             01 Jan 2024, 10:30
                         </td>
                     </tr>
@@ -144,7 +160,10 @@
 </div>
 
 <footer class="footer">
-    <p>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</p>
+    <div class="footer-inner">
+        <span>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</span>
+        <a th:href="@{/admin/login}">Admin Panel</a>
+    </div>
 </footer>
 
 </body>

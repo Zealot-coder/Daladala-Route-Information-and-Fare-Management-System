@@ -28,7 +28,7 @@ Built with Spring Boot as a university Advanced Java Programming project.
 
 | Layer | Technology |
 |---|---|
-| Backend | Spring Boot 3.2.5, Java 17 |
+| Backend | Spring Boot 3.2.5, Java 25 |
 | Web | Spring MVC |
 | Database Access | Spring Data JPA + Hibernate |
 | Frontend | Thymeleaf, HTML, CSS |
@@ -77,7 +77,7 @@ src/main/resources/
 
 Make sure the following are installed before running the project:
 
-- **Java 17** — [Download](https://adoptium.net/)
+- **Java 25** — [Download](https://adoptium.net/)
 - **Maven 3.6+** — [Download](https://maven.apache.org/)
 - **MySQL 8.0+** — [Download](https://dev.mysql.com/downloads/)
 - **VS Code** with the **Extension Pack for Java** (Microsoft)
@@ -123,6 +123,8 @@ Replace `your_password_here` with your MySQL root password.
 ```bash
 mvn spring-boot:run
 ```
+
+> **Note:** Do not use VS Code's Code Runner extension — it runs `javac` directly and will fail. Always use Maven.
 
 ### Step 4 — Open in Browser
 
@@ -185,6 +187,9 @@ The `database.sql` file loads 20 realistic Dar es Salaam routes, including:
 - Every admin action (add, edit, deactivate) is automatically logged to `route_history`
 - Admin sessions are managed via `HttpSession` — no Spring Security required
 - Thymeleaf cache is disabled during development for instant HTML reload
+- Lombok 1.18.36 is required (overrides Spring Boot default) for Java 25 compatibility
+- Do **not** use VS Code Code Runner — always run via `mvn spring-boot:run` in the terminal
+- Table rows are clickable — click any route row to go directly to its detail page
 
 ---
 
@@ -192,4 +197,3 @@ The `database.sql` file loads 20 realistic Dar es Salaam routes, including:
 
 University Advanced Java Programming Project  
 Case Study: Dar es Salaam, Tanzania
->>>>>>> 934d5e6 (Initial project commit)

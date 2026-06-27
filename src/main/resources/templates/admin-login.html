@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
     <title>Admin Login — Daladala System</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
+<body style="display:flex; flex-direction:column; min-height:100vh; background:#f0f4f8;">
 
 <!-- NAVIGATION -->
 <nav class="navbar navbar-admin">
     <div class="container">
-        <a class="nav-brand" th:href="@{/}">Daladala System — Dar es Salaam</a>
+        <a class="nav-brand" th:href="@{/}">
+            <span class="nav-brand-icon">&#x1F68C;</span>
+            Daladala System
+        </a>
         <div class="nav-links">
             <a th:href="@{/}">Passenger View</a>
         </div>
@@ -21,10 +25,11 @@
 <div class="login-wrapper">
     <div class="login-card">
 
-        <h2>Admin Login</h2>
-        <p class="login-sub">Daladala Route Management System</p>
+        <div class="login-logo">&#x1F512;</div>
 
-        <!-- Error message -->
+        <h2>Admin Login</h2>
+        <p class="login-sub">Daladala Route Management Panel</p>
+
         <div th:if="${error}" class="alert alert-error" th:text="${error}">
             Invalid credentials
         </div>
@@ -37,7 +42,7 @@
                        id="username"
                        name="username"
                        class="form-control"
-                       placeholder="Enter username"
+                       placeholder="Enter your username"
                        required
                        autofocus>
             </div>
@@ -48,23 +53,31 @@
                        id="password"
                        name="password"
                        class="form-control"
-                       placeholder="Enter password"
+                       placeholder="Enter your password"
                        required>
             </div>
 
             <button type="submit" class="btn btn-primary"
-                    style="width: 100%; margin-top: 6px;">
-                Login
+                    style="width:100%; margin-top:4px; padding:12px;">
+                Sign In
             </button>
 
         </form>
 
-        <p style="text-align: center; margin-top: 18px; font-size: 13px; color: #9ca3af;">
-            <a th:href="@{/}" style="color: #1d4ed8;">Back to Passenger View</a>
+        <p style="text-align:center; margin-top:20px; font-size:13px; color:#9ca3af;">
+            <a th:href="@{/}" style="color:#1d4ed8; text-decoration:none;">
+                &larr; Back to Passenger View
+            </a>
         </p>
 
     </div>
 </div>
+
+<footer class="footer" style="margin-top:auto;">
+    <div class="footer-inner">
+        <span>Daladala System &mdash; Admin Panel</span>
+    </div>
+</footer>
 
 </body>
 </html>

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daladala Route & Fare Information System</title>
+    <meta name="color-scheme" content="light">
+    <title>Daladala Route &amp; Fare Information System</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -11,11 +12,15 @@
 <!-- NAVIGATION -->
 <nav class="navbar">
     <div class="container">
-        <a class="nav-brand" th:href="@{/}">Daladala System — Dar es Salaam</a>
+        <a class="nav-brand" th:href="@{/}">
+            <span class="nav-brand-icon">&#x1F68C;</span>
+            Daladala System
+        </a>
         <div class="nav-links">
-            <a th:href="@{/}" class="active">Home</a>
-            <a th:href="@{/routes}">All Routes</a>
-            <a th:href="@{/routes/search}">Search</a>
+            <a th:href="@{/}"              th:class="${activePage == 'home'}      ? 'active' : ''">Home</a>
+            <a th:href="@{/routes}"        th:class="${activePage == 'routes'}    ? 'active' : ''">Routes</a>
+            <a th:href="@{/routes/search}" th:class="${activePage == 'search'}    ? 'active' : ''">Search</a>
+            <a th:href="@{/calculate}"     th:class="${activePage == 'calculate'} ? 'active' : ''">Fare Calc</a>
             <a th:href="@{/admin/login}" class="admin-link">Admin</a>
         </div>
     </div>
@@ -24,13 +29,30 @@
 <!-- HERO -->
 <section class="hero">
     <div class="container">
-        <h1>Daladala Route & Fare Information</h1>
-        <p>Search routes and fares across Dar es Salaam, Tanzania</p>
+        <div class="hero-tag">Dar es Salaam, Tanzania</div>
+        <h1>Daladala Route &amp; Fare Information</h1>
+        <p>Find your route, check the fare, and travel with confidence across Dar es Salaam.</p>
+
         <form class="hero-search" th:action="@{/routes/search}" method="get">
             <input type="text" name="keyword"
-                   placeholder="Search by area (e.g. Kariakoo, Ubungo, Mwenge)...">
-            <button type="submit" class="btn btn-primary">Search</button>
+                   placeholder="Search by area e.g. Kariakoo, Ubungo, Mwenge...">
+            <button type="submit" class="btn btn-light">Search</button>
         </form>
+
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="stat-num" th:text="${totalRoutes}">20</span>
+                <span class="stat-lbl">Active Routes</span>
+            </div>
+            <div class="hero-stat">
+                <span class="stat-num" th:text="${#numbers.formatInteger(minFare, 0, 'COMMA')}">500</span>
+                <span class="stat-lbl">Lowest Fare (TZS)</span>
+            </div>
+            <div class="hero-stat">
+                <span class="stat-num" th:text="${areas}">12</span>
+                <span class="stat-lbl">Areas Covered</span>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -38,16 +60,17 @@
 <div class="container page-content">
 
     <div class="section-header">
-        <h2 class="section-title">Available Routes</h2>
-        <a th:href="@{/routes/search}" class="btn btn-outline btn-sm">Advanced Search</a>
+        <h2 class="section-title">All Available Routes</h2>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="section-count" th:text="${totalRoutes} + ' routes'">20 routes</span>
+            <a th:href="@{/routes/search}" class="btn btn-outline btn-sm">Advanced Search</a>
+        </div>
     </div>
 
-    <!-- No routes message -->
     <div th:if="${#lists.isEmpty(routes)}" class="empty-state">
         <p>No routes available at the moment.</p>
     </div>
 
-    <!-- Routes table -->
     <div th:if="${!#lists.isEmpty(routes)}" class="table-wrapper">
         <table>
             <thead>
@@ -58,20 +81,24 @@
                     <th>Via</th>
                     <th>Distance</th>
                     <th>Fare (TZS)</th>
-                    <th>Details</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="route : ${routes}">
-                    <td th:text="${route.routeNumber}">DAL-01</td>
+                <tr class="clickable-row"
+                    th:each="route : ${routes}"
+                    th:data-href="@{/routes/{id}(id=${route.id})}">
+                    <td><strong th:text="${route.routeNumber}">DAL-01</strong></td>
                     <td th:text="${route.startPoint}">Kariakoo</td>
                     <td th:text="${route.endPoint}">Ubungo</td>
                     <td th:text="${route.viaStops != null ? route.viaStops : '—'}">Magomeni</td>
                     <td th:text="${route.distanceKm} + ' km'">12.0 km</td>
-                    <td class="fare-cell" th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')}">800</td>
+                    <td class="fare-cell"
+                        th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')} + ' TZS'">800 TZS</td>
                     <td>
                         <a th:href="@{/routes/{id}(id=${route.id})}"
-                           class="btn btn-sm btn-secondary">View</a>
+                           class="btn btn-sm btn-outline"
+                           onclick="event.stopPropagation()">View &rarr;</a>
                     </td>
                 </tr>
             </tbody>
@@ -81,8 +108,19 @@
 </div>
 
 <footer class="footer">
-    <p>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</p>
+    <div class="footer-inner">
+        <span>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</span>
+        <a th:href="@{/admin/login}">Admin Panel</a>
+    </div>
 </footer>
+
+<script>
+document.querySelectorAll('.clickable-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+        window.location.href = row.getAttribute('data-href');
+    });
+});
+</script>
 
 </body>
 </html>

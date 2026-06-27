@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — Daladala System</title>
+    <meta name="color-scheme" content="light">
+    <title>Dashboard — Daladala Admin</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -12,17 +13,34 @@
 <nav class="navbar navbar-admin">
     <div class="container">
         <a class="nav-brand" th:href="@{/admin/dashboard}">
-            Daladala Admin &mdash;
-            <span th:text="${session.adminUsername}" style="font-weight:400;">admin</span>
+            <span class="nav-brand-icon">&#x2699;&#xFE0F;</span>
+            Admin Panel
         </a>
         <div class="nav-links">
             <a th:href="@{/admin/dashboard}" class="active">Dashboard</a>
-            <a th:href="@{/admin/routes/new}" class="btn btn-success btn-sm"
-               style="margin-left:6px;">+ Add Route</a>
+            <a th:href="@{/admin/change-password}">Change Password</a>
+            <a th:href="@{/}" style="color:#93c5fd;">Passenger View</a>
+            <a th:href="@{/admin/routes/export}" class="btn btn-sm btn-secondary" style="margin-left:6px;">&#x2B07; Export CSV</a>
+            <a th:href="@{/admin/routes/new}" class="btn btn-success btn-sm" style="margin-left:4px;">+ Add Route</a>
             <a th:href="@{/admin/logout}" style="color:#fca5a5; margin-left:4px;">Logout</a>
         </div>
     </div>
 </nav>
+
+<!-- PAGE BANNER -->
+<div class="page-banner">
+    <div class="container">
+        <div class="page-banner-inner">
+            <div>
+                <h1>Dashboard</h1>
+                <div class="breadcrumb">
+                    Logged in as &nbsp;<strong th:text="${session.adminUsername}">admin</strong>
+                </div>
+            </div>
+            <a th:href="@{/admin/routes/new}" class="btn btn-success btn-sm">+ Add New Route</a>
+        </div>
+    </div>
+</div>
 
 <div class="container page-content">
 
@@ -33,20 +51,41 @@
     <!-- STATS -->
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-label">Total Routes</div>
-            <div class="stat-value" th:text="${#lists.size(routes)}">0</div>
+            <div class="stat-icon stat-icon-blue">&#x1F5FA;&#xFE0F;</div>
+            <div class="stat-info">
+                <div class="stat-label">Total Routes</div>
+                <div class="stat-value" th:text="${#lists.size(routes)}">0</div>
+            </div>
         </div>
-        <div class="stat-card" style="border-left-color: #047857;">
-            <div class="stat-label">History Records</div>
-            <div class="stat-value" style="color:#047857;"
-                 th:text="${#lists.size(recentHistory)}">0</div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">&#x2705;</div>
+            <div class="stat-info">
+                <div class="stat-label">Active Routes</div>
+                <div class="stat-value" th:with="activeList=${routes.?[isActive == true]}"
+                     th:text="${#lists.size(activeList)}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-red">&#x26D4;</div>
+            <div class="stat-info">
+                <div class="stat-label">Inactive Routes</div>
+                <div class="stat-value" th:with="inactiveList=${routes.?[isActive == false]}"
+                     th:text="${#lists.size(inactiveList)}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-amber">&#x1F4CB;</div>
+            <div class="stat-info">
+                <div class="stat-label">History Records</div>
+                <div class="stat-value" th:text="${#lists.size(recentHistory)}">0</div>
+            </div>
         </div>
     </div>
 
     <!-- ROUTES TABLE -->
     <div class="section-header">
         <h2 class="section-title">All Routes</h2>
-        <a th:href="@{/admin/routes/new}" class="btn btn-success btn-sm">+ Add New Route</a>
+        <span class="section-count" th:text="${#lists.size(routes)} + ' total'"></span>
     </div>
 
     <div th:if="${#lists.isEmpty(routes)}" class="empty-state">
@@ -70,35 +109,39 @@
             </thead>
             <tbody>
                 <tr th:each="route : ${routes}">
-                    <td th:text="${route.routeNumber}">DAL-01</td>
+                    <td><strong th:text="${route.routeNumber}">DAL-01</strong></td>
                     <td th:text="${route.startPoint}">Kariakoo</td>
                     <td th:text="${route.endPoint}">Ubungo</td>
                     <td th:text="${route.viaStops != null ? route.viaStops : '—'}">Magomeni</td>
-                    <td th:text="${route.distanceKm} + ' km'">12.0 km</td>
+                    <td th:text="${route.distanceKm} + ' km'" style="white-space:nowrap;">12.0 km</td>
                     <td class="fare-cell"
                         th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')}">800</td>
                     <td>
-                        <span th:if="${route.isActive}" class="badge badge-active">Active</span>
+                        <span th:if="${route.isActive}"  class="badge badge-active">Active</span>
                         <span th:unless="${route.isActive}" class="badge badge-inactive">Inactive</span>
                     </td>
                     <td>
                         <div class="action-btns">
-                            <!-- View (passenger side) -->
                             <a th:href="@{/routes/{id}(id=${route.id})}"
                                class="btn btn-sm btn-secondary">View</a>
-
-                            <!-- Edit -->
                             <a th:href="@{/admin/routes/edit/{id}(id=${route.id})}"
                                class="btn btn-sm btn-warning">Edit</a>
-
-                            <!-- Deactivate (soft delete) -->
-                            <form th:action="@{/admin/routes/delete/{id}(id=${route.id})}"
+                            <form th:if="${route.isActive}"
+                                  th:action="@{/admin/routes/delete/{id}(id=${route.id})}"
                                   method="post">
                                 <button type="submit"
                                         class="btn btn-sm btn-danger"
-                                        th:if="${route.isActive}"
                                         onclick="return confirm('Deactivate this route?')">
                                     Deactivate
+                                </button>
+                            </form>
+                            <form th:unless="${route.isActive}"
+                                  th:action="@{/admin/routes/reactivate/{id}(id=${route.id})}"
+                                  method="post">
+                                <button type="submit"
+                                        class="btn btn-sm btn-success"
+                                        onclick="return confirm('Reactivate this route?')">
+                                    Reactivate
                                 </button>
                             </form>
                         </div>
@@ -108,9 +151,10 @@
         </table>
     </div>
 
-    <!-- RECENT CHANGE HISTORY -->
-    <div class="section-header" style="margin-top: 36px;">
+    <!-- RECENT HISTORY -->
+    <div class="section-header" style="margin-top:36px;">
         <h2 class="section-title">Recent Changes</h2>
+        <span class="section-count" th:text="${#lists.size(recentHistory)} + ' records'"></span>
     </div>
 
     <div th:if="${#lists.isEmpty(recentHistory)}" class="empty-state" style="padding:24px 0;">
@@ -131,16 +175,17 @@
                 <tr th:each="h : ${recentHistory}">
                     <td>
                         <span th:text="${h.action}"
-                              th:classappend="${h.action == 'CREATED'} ? 'badge badge-created' :
-                                             (${h.action == 'UPDATED'} ? 'badge badge-updated' :
-                                              'badge badge-deleted')"
+                              th:class="${h.action == 'CREATED'} ? 'badge badge-created' :
+                                        (${h.action == 'UPDATED'} ? 'badge badge-updated' :
+                                         'badge badge-deleted')"
                               class="badge">
                             UPDATED
                         </span>
                     </td>
                     <td th:text="${h.changeDescription}">Fare updated</td>
-                    <td th:text="${h.changedBy}">admin</td>
-                    <td th:text="${#temporals.format(h.changedAt, 'dd MMM yyyy, HH:mm')}">
+                    <td><strong th:text="${h.changedBy}">admin</strong></td>
+                    <td style="white-space:nowrap; color:#718096;"
+                        th:text="${#temporals.format(h.changedAt, 'dd MMM yyyy, HH:mm')}">
                         01 Jan 2024, 10:30
                     </td>
                 </tr>
@@ -151,7 +196,10 @@
 </div>
 
 <footer class="footer">
-    <p>Daladala Admin Panel &mdash; Dar es Salaam, Tanzania</p>
+    <div class="footer-inner">
+        <span>Daladala Admin Panel &mdash; Dar es Salaam, Tanzania</span>
+        <a th:href="@{/admin/logout}">Logout</a>
+    </div>
 </footer>
 
 </body>

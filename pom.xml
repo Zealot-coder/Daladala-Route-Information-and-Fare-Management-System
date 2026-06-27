@@ -20,7 +20,8 @@
     <description>Daladala route and fare management system for Dar es Salaam</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>25</java.version>
+        <lombok.version>1.18.36</lombok.version>
     </properties>
 
     <dependencies>

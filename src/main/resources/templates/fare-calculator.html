@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Fare Calculator — Daladala System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="navbar">
+    <div class="container">
+        <a class="nav-brand" th:href="@{/}">
+            <span class="nav-brand-icon">&#x1F68C;</span>
+            Daladala System
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/}"              th:class="${activePage == 'home'}      ? 'active' : ''">Home</a>
+            <a th:href="@{/routes}"        th:class="${activePage == 'routes'}    ? 'active' : ''">Routes</a>
+            <a th:href="@{/routes/search}" th:class="${activePage == 'search'}    ? 'active' : ''">Search</a>
+            <a th:href="@{/calculate}"     th:class="${activePage == 'calculate'} ? 'active' : ''">Fare Calc</a>
+            <a th:href="@{/admin/login}" class="admin-link">Admin</a>
+        </div>
+    </div>
+</nav>
+
+<!-- PAGE BANNER -->
+<div class="page-banner">
+    <div class="container">
+        <div class="page-banner-inner">
+            <div>
+                <h1>Fare Calculator</h1>
+                <div class="breadcrumb">
+                    <a th:href="@{/}">Home</a>
+                    <span class="breadcrumb-sep">/</span>
+                    <span>Fare Calculator</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container page-content">
+    <div class="calc-wrapper">
+
+        <!-- INPUT CARD -->
+        <div class="card">
+            <h2 class="card-title">Check Your Fare</h2>
+            <p style="font-size:14px; color:#718096; margin-bottom:20px;">
+                Enter your starting point and destination to see the route fare.
+            </p>
+
+            <form th:action="@{/calculate}" method="get">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="from">From (Starting Point)</label>
+                        <input type="text"
+                               id="from"
+                               name="from"
+                               class="form-control"
+                               th:value="${from}"
+                               placeholder="e.g. Kariakoo"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="to">To (Destination)</label>
+                        <input type="text"
+                               id="to"
+                               name="to"
+                               class="form-control"
+                               th:value="${to}"
+                               placeholder="e.g. Ubungo"
+                               required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:13px;">
+                    Calculate Fare
+                </button>
+            </form>
+        </div>
+
+        <!-- RESULTS -->
+        <div th:if="${searched}">
+
+            <!-- ONE RESULT — show prominent fare card -->
+            <div th:if="${#lists.size(results) == 1}" th:with="r=${results[0]}">
+                <div class="fare-result-card">
+                    <div class="fare-result-label">Passenger Fare</div>
+                    <div class="fare-result-amount"
+                         th:text="${#numbers.formatInteger(r.fareTzs, 0, 'COMMA')}">1,000</div>
+                    <div class="fare-result-currency">TZS</div>
+                    <div class="fare-result-route"
+                         th:text="${r.startPoint} + '  →  ' + ${r.endPoint}">
+                        Kariakoo → Ubungo
+                    </div>
+                    <div class="fare-result-via"
+                         th:if="${r.viaStops != null}"
+                         th:text="'via ' + ${r.viaStops}">via Magomeni</div>
+                </div>
+                <div class="card" style="display:flex; gap:24px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+                    <div>
+                        <div style="font-size:12px; font-weight:700; color:#718096; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px;">Route Number</div>
+                        <div style="font-size:17px; font-weight:800;" th:text="${r.routeNumber}">DAL-01</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px; font-weight:700; color:#718096; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px;">Distance</div>
+                        <div style="font-size:17px; font-weight:800;" th:text="${r.distanceKm} + ' km'">12.0 km</div>
+                    </div>
+                    <a th:href="@{/routes/{id}(id=${r.id})}" class="btn btn-outline">
+                        View Full Route Details &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <!-- MULTIPLE RESULTS — show table -->
+            <div th:if="${#lists.size(results) > 1}">
+                <div class="section-header">
+                    <h2 class="section-title">Matching Routes</h2>
+                    <span class="section-count" th:text="${#lists.size(results)} + ' routes found'"></span>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Route No.</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Via</th>
+                                <th>Distance</th>
+                                <th>Fare (TZS)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="clickable-row"
+                                th:each="r : ${results}"
+                                th:data-href="@{/routes/{id}(id=${r.id})}">
+                                <td><strong th:text="${r.routeNumber}">DAL-01</strong></td>
+                                <td th:text="${r.startPoint}">Kariakoo</td>
+                                <td th:text="${r.endPoint}">Ubungo</td>
+                                <td th:text="${r.viaStops != null ? r.viaStops : '—'}">—</td>
+                                <td th:text="${r.distanceKm} + ' km'">12.0 km</td>
+                                <td class="fare-cell"
+                                    th:text="${#numbers.formatInteger(r.fareTzs, 0, 'COMMA')} + ' TZS'">800 TZS</td>
+                                <td>
+                                    <a th:href="@{/routes/{id}(id=${r.id})}"
+                                       class="btn btn-sm btn-outline"
+                                       onclick="event.stopPropagation()">View &rarr;</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NO RESULTS -->
+            <div th:if="${#lists.isEmpty(results)}" class="no-route-card">
+                <div class="no-route-icon">&#x1F50D;</div>
+                <p>No direct route found between
+                    <strong th:text="${from}">these points</strong> and
+                    <strong th:text="${to}">this destination</strong>.
+                </p>
+                <p style="font-size:13px; color:#a0aec0; margin-bottom:20px;">
+                    Try a different spelling or use the general search.
+                </p>
+                <a th:href="@{/routes/search}" class="btn btn-outline">Browse All Routes</a>
+            </div>
+
+        </div>
+
+        <!-- TIP (before search) -->
+        <div th:unless="${searched}" class="alert alert-info" style="margin-top:8px;">
+            Type the area name as it appears in route listings. Example: <strong>Kariakoo</strong>, <strong>Ubungo</strong>, <strong>Tegeta</strong>.
+        </div>
+
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <span>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</span>
+        <a th:href="@{/admin/login}">Admin Panel</a>
+    </div>
+</footer>
+
+<script>
+document.querySelectorAll('.clickable-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+        window.location.href = row.getAttribute('data-href');
+    });
+});
+</script>
+
+</body>
+</html>

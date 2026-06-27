@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Routes — Daladala System</title>
+    <meta name="color-scheme" content="light">
+    <title th:text="${activePage == 'search'} ? 'Search Routes' : 'All Routes' + ' — Daladala System'">Routes — Daladala System</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -11,23 +12,46 @@
 <!-- NAVIGATION -->
 <nav class="navbar">
     <div class="container">
-        <a class="nav-brand" th:href="@{/}">Daladala System — Dar es Salaam</a>
+        <a class="nav-brand" th:href="@{/}">
+            <span class="nav-brand-icon">&#x1F68C;</span>
+            Daladala System
+        </a>
         <div class="nav-links">
-            <a th:href="@{/}">Home</a>
-            <a th:href="@{/routes}">All Routes</a>
-            <a th:href="@{/routes/search}" class="active">Search</a>
+            <a th:href="@{/}"              th:class="${activePage == 'home'}      ? 'active' : ''">Home</a>
+            <a th:href="@{/routes}"        th:class="${activePage == 'routes'}    ? 'active' : ''">Routes</a>
+            <a th:href="@{/routes/search}" th:class="${activePage == 'search'}    ? 'active' : ''">Search</a>
+            <a th:href="@{/calculate}"     th:class="${activePage == 'calculate'} ? 'active' : ''">Fare Calc</a>
             <a th:href="@{/admin/login}" class="admin-link">Admin</a>
         </div>
     </div>
 </nav>
 
+<!-- PAGE BANNER -->
+<div class="page-banner">
+    <div class="container">
+        <div class="page-banner-inner">
+            <div>
+                <h1 th:text="${activePage == 'search'} ? 'Search Routes' : 'All Routes'">All Routes</h1>
+                <div class="breadcrumb">
+                    <a th:href="@{/}">Home</a>
+                    <span class="breadcrumb-sep">/</span>
+                    <span th:text="${activePage == 'search'} ? 'Search' : 'Routes'">Routes</span>
+                </div>
+            </div>
+            <a th:href="@{/routes/search}" th:if="${activePage == 'routes'}"
+               class="btn btn-light btn-sm">Advanced Search</a>
+            <a th:href="@{/routes}" th:if="${activePage == 'search'}"
+               class="btn btn-light btn-sm">View All Routes</a>
+        </div>
+    </div>
+</div>
+
 <div class="container page-content">
 
-    <!-- SEARCH FORM -->
+    <!-- SEARCH FORM (shown on search page or always for convenience) -->
     <div class="search-card">
         <h3>Search Routes</h3>
 
-        <!-- Option 1: Keyword search -->
         <form th:action="@{/routes/search}" method="get">
             <div class="search-row">
                 <div class="search-field">
@@ -43,38 +67,76 @@
 
         <div class="search-separator">OR search by origin and destination</div>
 
-        <!-- Option 2: From / To search -->
         <form th:action="@{/routes/search}" method="get">
             <div class="search-row">
                 <div class="search-field">
                     <label>From</label>
-                    <input type="text" name="from"
-                           th:value="${from}"
-                           placeholder="e.g. Posta">
+                    <input type="text" name="from" th:value="${from}" placeholder="e.g. Posta">
                 </div>
-                <div class="search-divider">to</div>
+                <div class="search-divider">&#x2192;</div>
                 <div class="search-field">
                     <label>To</label>
-                    <input type="text" name="to"
-                           th:value="${to}"
-                           placeholder="e.g. Kimara">
+                    <input type="text" name="to" th:value="${to}" placeholder="e.g. Kimara">
                 </div>
                 <button type="submit" class="btn btn-primary">Search</button>
             </div>
         </form>
     </div>
 
+    <!-- SORT / FILTER BAR -->
+    <div class="filter-bar">
+        <form th:action="${activePage == 'search'} ? @{/routes/search} : @{/routes}" method="get">
+            <!-- Preserve active search params -->
+            <input type="hidden" name="keyword" th:value="${keyword}" th:if="${keyword != null and !#strings.isEmpty(keyword)}">
+            <input type="hidden" name="from"    th:value="${from}"    th:if="${from != null and !#strings.isEmpty(from)}">
+            <input type="hidden" name="to"      th:value="${to}"      th:if="${to != null and !#strings.isEmpty(to)}">
+
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Sort By</label>
+                    <select name="sort" class="form-control-sm" onchange="this.form.submit()">
+                        <option value="">Default</option>
+                        <option value="fare_asc"      th:selected="${sort == 'fare_asc'}">Fare &#x2191; (Low to High)</option>
+                        <option value="fare_desc"     th:selected="${sort == 'fare_desc'}">Fare &#x2193; (High to Low)</option>
+                        <option value="distance_asc"  th:selected="${sort == 'distance_asc'}">Distance &#x2191; Shortest</option>
+                        <option value="distance_desc" th:selected="${sort == 'distance_desc'}">Distance &#x2193; Longest</option>
+                        <option value="route_asc"     th:selected="${sort == 'route_asc'}">Route No. A–Z</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Min Fare (TZS)</label>
+                    <input type="number" name="minFare" class="form-control-sm"
+                           th:value="${minFare}" placeholder="e.g. 500" style="width:110px;">
+                </div>
+                <div class="filter-group">
+                    <label>Max Fare (TZS)</label>
+                    <input type="number" name="maxFare" class="form-control-sm"
+                           th:value="${maxFare}" placeholder="e.g. 1500" style="width:110px;">
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <div style="display:flex; gap:6px;">
+                        <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                        <a th:href="${activePage == 'search'} ? @{/routes/search} : @{/routes}"
+                           class="btn btn-secondary btn-sm">Reset</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <!-- RESULTS HEADER -->
     <div class="section-header">
-        <h2 class="section-title"
-            th:text="${keyword != null and !#strings.isEmpty(keyword)} ? 'Results for: ' + keyword :
-                     (from != null and !#strings.isEmpty(from)) ? 'Routes: ' + from + ' to ' + to :
-                     'All Routes'">
-            All Routes
+        <h2 class="section-title">
+            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                  th:text="'Results for &quot;' + ${keyword} + '&quot;'"></span>
+            <span th:if="${(keyword == null or #strings.isEmpty(keyword)) and (from != null and !#strings.isEmpty(from))}"
+                  th:text="${from} + ' → ' + ${to}"></span>
+            <span th:if="${(keyword == null or #strings.isEmpty(keyword)) and (from == null or #strings.isEmpty(from))}">
+                All Routes
+            </span>
         </h2>
-        <span th:text="${#lists.size(routes)} + ' route(s) found'"
-              style="font-size:13px; color:#6b7280;">
-        </span>
+        <span class="section-count" th:text="${#lists.size(routes)} + ' route(s) found'"></span>
     </div>
 
     <!-- NO RESULTS -->
@@ -94,21 +156,24 @@
                     <th>Via</th>
                     <th>Distance</th>
                     <th>Fare (TZS)</th>
-                    <th>Details</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="route : ${routes}">
-                    <td th:text="${route.routeNumber}">DAL-01</td>
+                <tr class="clickable-row"
+                    th:each="route : ${routes}"
+                    th:data-href="@{/routes/{id}(id=${route.id})}">
+                    <td><strong th:text="${route.routeNumber}">DAL-01</strong></td>
                     <td th:text="${route.startPoint}">Kariakoo</td>
                     <td th:text="${route.endPoint}">Ubungo</td>
                     <td th:text="${route.viaStops != null ? route.viaStops : '—'}">Magomeni</td>
                     <td th:text="${route.distanceKm} + ' km'">12.0 km</td>
                     <td class="fare-cell"
-                        th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')}">800</td>
+                        th:text="${#numbers.formatInteger(route.fareTzs, 0, 'COMMA')} + ' TZS'">800 TZS</td>
                     <td>
                         <a th:href="@{/routes/{id}(id=${route.id})}"
-                           class="btn btn-sm btn-secondary">View</a>
+                           class="btn btn-sm btn-outline"
+                           onclick="event.stopPropagation()">View &rarr;</a>
                     </td>
                 </tr>
             </tbody>
@@ -118,8 +183,19 @@
 </div>
 
 <footer class="footer">
-    <p>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</p>
+    <div class="footer-inner">
+        <span>Daladala Route &amp; Fare Information System &mdash; Dar es Salaam, Tanzania</span>
+        <a th:href="@{/admin/login}">Admin Panel</a>
+    </div>
 </footer>
+
+<script>
+document.querySelectorAll('.clickable-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+        window.location.href = row.getAttribute('data-href');
+    });
+});
+</script>
 
 </body>
 </html>

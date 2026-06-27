@@ -66,6 +66,19 @@ public class RouteService {
         routeHistoryService.log(updatedRoute.getId(), "UPDATED", description, adminUsername);
     }
 
+    public void reactivateRoute(Long id, String adminUsername) {
+        Route route = getRouteById(id);
+        route.setIsActive(true);
+        routeRepository.save(route);
+        routeHistoryService.log(
+                id,
+                "UPDATED",
+                "Route " + route.getRouteNumber() + " reactivated (" +
+                route.getStartPoint() + " → " + route.getEndPoint() + ")",
+                adminUsername
+        );
+    }
+
     // Soft delete: sets is_active = false instead of removing the row.
     // Preserves route_history records (which have a FK to this route).
     public void deleteRoute(Long id, String adminUsername) {
