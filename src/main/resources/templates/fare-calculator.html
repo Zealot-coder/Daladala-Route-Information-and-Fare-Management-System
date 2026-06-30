@@ -13,7 +13,7 @@
 <nav class="navbar">
     <div class="container">
         <a class="nav-brand" th:href="@{/}">
-            <span class="nav-brand-icon">&#x1F68C;</span>
+            <span class="nav-brand-icon">D</span>
             Daladala System
         </a>
         <div class="nav-links">
@@ -157,7 +157,6 @@
 
             <!-- NO RESULTS -->
             <div th:if="${#lists.isEmpty(results)}" class="no-route-card">
-                <div class="no-route-icon">&#x1F50D;</div>
                 <p>No direct route found between
                     <strong th:text="${from}">these points</strong> and
                     <strong th:text="${to}">this destination</strong>.

@@ -13,14 +13,14 @@
 <nav class="navbar navbar-admin">
     <div class="container">
         <a class="nav-brand" th:href="@{/admin/dashboard}">
-            <span class="nav-brand-icon">&#x2699;&#xFE0F;</span>
+            <span class="nav-brand-icon nav-brand-icon-admin">A</span>
             Admin Panel
         </a>
         <div class="nav-links">
             <a th:href="@{/admin/dashboard}" class="active">Dashboard</a>
             <a th:href="@{/admin/change-password}">Change Password</a>
             <a th:href="@{/}" style="color:#93c5fd;">Passenger View</a>
-            <a th:href="@{/admin/routes/export}" class="btn btn-sm btn-secondary" style="margin-left:6px;">&#x2B07; Export CSV</a>
+            <a th:href="@{/admin/routes/export}" class="btn btn-sm btn-secondary" style="margin-left:6px;">&#x2193; Export CSV</a>
             <a th:href="@{/admin/routes/new}" class="btn btn-success btn-sm" style="margin-left:4px;">+ Add Route</a>
             <a th:href="@{/admin/logout}" style="color:#fca5a5; margin-left:4px;">Logout</a>
         </div>
@@ -51,14 +51,14 @@
     <!-- STATS -->
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-icon stat-icon-blue">&#x1F5FA;&#xFE0F;</div>
+            <div class="stat-icon stat-icon-blue">RT</div>
             <div class="stat-info">
                 <div class="stat-label">Total Routes</div>
                 <div class="stat-value" th:text="${#lists.size(routes)}">0</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon stat-icon-green">&#x2705;</div>
+            <div class="stat-icon stat-icon-green">ON</div>
             <div class="stat-info">
                 <div class="stat-label">Active Routes</div>
                 <div class="stat-value" th:with="activeList=${routes.?[isActive == true]}"
@@ -66,7 +66,7 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon stat-icon-red">&#x26D4;</div>
+            <div class="stat-icon stat-icon-red">OFF</div>
             <div class="stat-info">
                 <div class="stat-label">Inactive Routes</div>
                 <div class="stat-value" th:with="inactiveList=${routes.?[isActive == false]}"
@@ -74,7 +74,7 @@
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon stat-icon-amber">&#x1F4CB;</div>
+            <div class="stat-icon stat-icon-amber">LOG</div>
             <div class="stat-info">
                 <div class="stat-label">History Records</div>
                 <div class="stat-value" th:text="${#lists.size(recentHistory)}">0</div>
