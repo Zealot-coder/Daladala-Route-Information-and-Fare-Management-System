@@ -23,7 +23,7 @@ public class RouteController {
     private final RouteService routeService;
     private final RouteHistoryService routeHistoryService;
 
-    // ── HOME ────────────────────────────────────────────────────────────────
+    // HOME
     @GetMapping("/")
     public String index(Model model) {
         List<Route> routes = routeService.getAllActiveRoutes();
@@ -38,7 +38,7 @@ public class RouteController {
         return "index";
     }
 
-    // ── ALL ROUTES ───────────────────────────────────────────────────────────
+    // ALL ROUTES
     @GetMapping("/routes")
     public String listRoutes(
             @RequestParam(required = false) String sort,
@@ -56,7 +56,7 @@ public class RouteController {
         return "routes";
     }
 
-    // ── SEARCH ───────────────────────────────────────────────────────────────
+    // SEARCH
     @GetMapping("/routes/search")
     public String searchRoutes(
             @RequestParam(required = false) String keyword,
@@ -89,7 +89,7 @@ public class RouteController {
         return "routes";
     }
 
-    // ── ROUTE DETAIL ─────────────────────────────────────────────────────────
+    // ROUTE DETAIL
     @GetMapping("/routes/{id}")
     public String viewRoute(@PathVariable Long id, Model model) {
         Route route = routeService.getRouteById(id);
@@ -100,7 +100,7 @@ public class RouteController {
         return "route-detail";
     }
 
-    // ── FARE CALCULATOR ──────────────────────────────────────────────────────
+    // FARE CALCULATOR
     @GetMapping("/calculate")
     public String fareCalculator(
             @RequestParam(required = false) String from,
@@ -120,7 +120,7 @@ public class RouteController {
         return "fare-calculator";
     }
 
-    // ── HELPERS ──────────────────────────────────────────────────────────────
+    // HELPERS
     private List<Route> filterAndSort(List<Route> routes, String sort, Integer minFare, Integer maxFare) {
         List<Route> list = new ArrayList<>(routes);
 

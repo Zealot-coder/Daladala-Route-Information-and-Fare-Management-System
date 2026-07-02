@@ -28,7 +28,7 @@ public class AdminController {
     private final RouteHistoryService routeHistoryService;
     private final AdminRepository adminRepository;
 
-    // ── LOGIN ────────────────────────────────────────────────────────────────
+    // LOGIN 
 
     @GetMapping("/login")
     public String loginPage() {
@@ -59,7 +59,7 @@ public class AdminController {
         return "redirect:/admin/login";
     }
 
-    // ── DASHBOARD ────────────────────────────────────────────────────────────
+    // DASHBOARD
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -70,7 +70,7 @@ public class AdminController {
         return "admin-dashboard";
     }
 
-    // ── ADD ROUTE ─────────────────────────────────────────────────────────────
+    // ADD ROUTE
 
     @GetMapping("/routes/new")
     public String showAddForm(HttpSession session, Model model) {
@@ -106,7 +106,7 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
-    // ── EDIT ROUTE ────────────────────────────────────────────────────────────
+    // EDIT ROUTE
 
     @GetMapping("/routes/edit/{id}")
     public String showEditForm(@PathVariable Long id, HttpSession session, Model model) {
@@ -136,7 +136,7 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
-    // ── DEACTIVATE ROUTE ──────────────────────────────────────────────────────
+    // DEACTIVATE ROUTE
 
     @PostMapping("/routes/delete/{id}")
     public String deleteRoute(
@@ -151,7 +151,7 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
-    // ── REACTIVATE ROUTE ──────────────────────────────────────────────────────
+    // REACTIVATE ROUTE
 
     @PostMapping("/routes/reactivate/{id}")
     public String reactivateRoute(
@@ -166,7 +166,7 @@ public class AdminController {
         return "redirect:/admin/dashboard";
     }
 
-    // ── CSV EXPORT ────────────────────────────────────────────────────────────
+    // CSV EXPORT
 
     @GetMapping("/routes/export")
     public void exportCsv(HttpSession session, HttpServletResponse response) throws IOException {
@@ -195,7 +195,7 @@ public class AdminController {
         writer.flush();
     }
 
-    // ── CHANGE PASSWORD ───────────────────────────────────────────────────────
+    // CHANGE PASSWORD
 
     @GetMapping("/change-password")
     public String changePasswordPage(HttpSession session) {
